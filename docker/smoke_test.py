@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 import uuid
 
@@ -30,7 +30,7 @@ def wait_for_server(name):
         try:
             request(base, "/healthz")
             return base
-        except (URLError, TimeoutError):
+        except OSError:
             if docker("inspect", name, "--format", "{{.State.Running}}") != "true":
                 raise RuntimeError("container exited during startup")
             time.sleep(1)
