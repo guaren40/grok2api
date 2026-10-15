@@ -16,6 +16,13 @@ import (
 
 // Run 解析启动参数并运行后端服务。
 func Run(args []string) error {
+	if len(args) > 0 && args[0] == "init-config" {
+		options, err := parseOptions(args[1:])
+		if err != nil {
+			return err
+		}
+		return initializeConfigFile(options.configPath, os.Stdout)
+	}
 	options, err := parseOptions(args)
 	if err != nil {
 		return err

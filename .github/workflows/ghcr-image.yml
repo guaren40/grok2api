@@ -192,3 +192,6 @@ jobs:
             --entrypoint /usr/local/bin/grok2api-require-arm64 \
             grok2api-arm64-check:local /bin/sh -ec \
             'test "$(apk --print-arch)" = aarch64; test "$(uname -m)" = aarch64'
+
+      - name: Verify first startup, login and persisted configuration
+        run: python3 docker/smoke_test.py grok2api-arm64-check:local

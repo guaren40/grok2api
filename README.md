@@ -208,7 +208,9 @@ Open `http://127.0.0.1:8000`. The image already includes the frontend; SQLite da
 
 You can keep using this repository as a GitHub source service on your ARM64 VPS. Zeabur detects the root `Dockerfile`; its build worker can use QEMU to execute the stages pinned to `linux/arm64`. The Dockerfile validates the actual image environment, and the entrypoint checks ARM64 again at startup, instead of rejecting a different implicit `TARGETARCH` default on the build worker.
 
-Mount the configuration file at `/run/grok2api/config.yaml`, mount persistent storage at `/app/data`, and configure HTTP port `8000`. Zeabur GitHub source builds do not read this repository's `docker-compose.yml`. For manual builds, use `docker buildx build --platform linux/arm64` to explicitly select ARM64 output metadata.
+No configuration mount is required for first startup: the container generates valid secrets and bootstrap credentials in `/app/data/config.yaml` and reuses that file on later starts. The default administrator is `admin`; on Zeabur, its initial password comes from the service's `PASSWORD` variable. Optional `GROK2API_ADMIN_USERNAME` and `GROK2API_ADMIN_PASSWORD` variables override the initial account. If no password is provided, a random one is generated and printed once during initialization. Changing these variables does not reset an existing administrator.
+
+The HTTP port is `8000`. Persist `/app/data` to retain the database, media, and generated encryption keys together. An existing configuration can still be mounted at `/run/grok2api/config.yaml` and takes precedence over generated configuration. Zeabur GitHub source builds do not read this repository's `docker-compose.yml`. For manual builds, use `docker buildx build --platform linux/arm64` to explicitly select ARM64 output metadata.
 
 Alternatively, choose **Add Service → Docker Image** and deploy `ghcr.io/guaren40/grok2api:latest-arm64` directly. If the image pull is denied, grant read access in the GitHub container package settings or configure registry credentials in Zeabur.
 

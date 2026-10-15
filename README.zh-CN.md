@@ -196,7 +196,9 @@ docker compose logs -f grok2api
 
 可以继续使用本仓库的 GitHub 源码服务，在 ARM64 VPS 上部署。Zeabur 自动读取根目录的 `Dockerfile`；构建机可通过 QEMU 执行其中固定为 `linux/arm64` 的构建阶段。Dockerfile 检查实际镜像环境，启动入口再次检查 ARM64 架构，不再因为构建机的默认 `TARGETARCH` 不同而中止。
 
-将配置文件挂载到 `/run/grok2api/config.yaml`，将数据卷挂载到 `/app/data`，并配置 HTTP 端口 `8000`。Zeabur 的 GitHub 源码构建不会读取本仓库的 `docker-compose.yml`。手动构建时使用 `docker buildx build --platform linux/arm64`，确保输出平台明确为 ARM64。
+首次启动无需挂载配置文件：容器会自动生成有效密钥和管理员配置，保存到 `/app/data/config.yaml`，后续启动复用该文件。默认管理员为 `admin`，在 Zeabur 上初始密码使用服务自带的 `PASSWORD` 变量；也可通过 `GROK2API_ADMIN_USERNAME`、`GROK2API_ADMIN_PASSWORD` 指定初始账号。未提供密码时会生成随机密码，并在首次初始化日志中显示。修改这些变量不会重置已经创建的管理员。
+
+服务的 HTTP 端口为 `8000`。将 `/app/data` 设为持久化目录，可同时保留数据库、媒体和自动生成的密钥配置。已有配置仍可挂载到 `/run/grok2api/config.yaml`，其优先级高于自动配置。Zeabur 的 GitHub 源码构建不会读取本仓库的 `docker-compose.yml`。手动构建时使用 `docker buildx build --platform linux/arm64`，确保输出平台明确为 ARM64。
 
 也可以使用 **Add Service → Docker Image**，直接部署 `ghcr.io/guaren40/grok2api:latest-arm64`。如拉取镜像遇到权限错误，需在 GitHub 的容器包设置中开放读取权限，或在 Zeabur 配置镜像仓库凭证。
 
