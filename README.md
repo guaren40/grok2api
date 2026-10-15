@@ -206,9 +206,11 @@ Open `http://127.0.0.1:8000`. The image already includes the frontend; SQLite da
 
 ### Zeabur on an ARM64 VPS
 
-Zeabur builds GitHub source on a separate build worker. An ARM64 runtime server does not automatically make the build target `linux/arm64`. If the build log says `builder target is linux/amd64`, that source build cannot produce the required ARM64 image; the Dockerfile stops rather than emitting an image with mismatched platform metadata.
+You can keep using this repository as a GitHub source service on your ARM64 VPS. Zeabur detects the root `Dockerfile`; its build worker can use QEMU to execute the stages pinned to `linux/arm64`. The Dockerfile validates the actual image environment, and the entrypoint checks ARM64 again at startup, instead of rejecting a different implicit `TARGETARCH` default on the build worker.
 
-In Zeabur, choose **Add Service → Docker Image**, enter `ghcr.io/guaren40/grok2api:latest-arm64`, and select your ARM64 runtime server. Mount the existing configuration file at `/run/grok2api/config.yaml`, mount persistent storage at `/app/data`, and configure HTTP port `8000`. If the image pull is denied, grant read access in the GitHub container package settings or configure registry credentials in Zeabur. Zeabur GitHub source builds do not read this repository's `docker-compose.yml`.
+Mount the configuration file at `/run/grok2api/config.yaml`, mount persistent storage at `/app/data`, and configure HTTP port `8000`. Zeabur GitHub source builds do not read this repository's `docker-compose.yml`. For manual builds, use `docker buildx build --platform linux/arm64` to explicitly select ARM64 output metadata.
+
+Alternatively, choose **Add Service → Docker Image** and deploy `ghcr.io/guaren40/grok2api:latest-arm64` directly. If the image pull is denied, grant read access in the GitHub container package settings or configure registry credentials in Zeabur.
 
 ### Run from source
 

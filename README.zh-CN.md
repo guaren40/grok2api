@@ -194,9 +194,11 @@ docker compose logs -f grok2api
 
 ### Zeabur 的 ARM64 VPS
 
-Zeabur 的 GitHub 源码构建在独立的构建机上进行，不会因为运行服务器是 ARM64 就自动以 `linux/arm64` 为构建目标。如果构建日志出现 `builder target is linux/amd64`，该次源码构建无法产出符合要求的 ARM64 镜像；Dockerfile 会主动停止构建，避免生成架构标记错误的镜像。
+可以继续使用本仓库的 GitHub 源码服务，在 ARM64 VPS 上部署。Zeabur 自动读取根目录的 `Dockerfile`；构建机可通过 QEMU 执行其中固定为 `linux/arm64` 的构建阶段。Dockerfile 检查实际镜像环境，启动入口再次检查 ARM64 架构，不再因为构建机的默认 `TARGETARCH` 不同而中止。
 
-在 Zeabur 使用 **Add Service → Docker Image**，镜像填写 `ghcr.io/guaren40/grok2api:latest-arm64`，运行目标选择你的 ARM64 服务器。将现有配置文件挂载到 `/run/grok2api/config.yaml`，将数据卷挂载到 `/app/data`，并配置 HTTP 端口 `8000`。如拉取镜像遇到权限错误，需在 GitHub 的容器包设置中开放读取权限，或在 Zeabur 配置镜像仓库凭证。Zeabur 的 GitHub 源码构建不会读取本仓库的 `docker-compose.yml`。
+将配置文件挂载到 `/run/grok2api/config.yaml`，将数据卷挂载到 `/app/data`，并配置 HTTP 端口 `8000`。Zeabur 的 GitHub 源码构建不会读取本仓库的 `docker-compose.yml`。手动构建时使用 `docker buildx build --platform linux/arm64`，确保输出平台明确为 ARM64。
+
+也可以使用 **Add Service → Docker Image**，直接部署 `ghcr.io/guaren40/grok2api:latest-arm64`。如拉取镜像遇到权限错误，需在 GitHub 的容器包设置中开放读取权限，或在 Zeabur 配置镜像仓库凭证。
 
 ### 源码运行
 

@@ -1,11 +1,10 @@
 FROM --platform=linux/arm64 python:3.12-alpine
 
-ARG TARGETOS
-ARG TARGETARCH
-RUN test "${TARGETOS}/${TARGETARCH}" = "linux/arm64"
+COPY --chmod=0755 docker/require-arm64.sh /usr/local/bin/grok2api-require-arm64
+RUN grok2api-require-arm64
 
 COPY tools/egress-quality-guard/session_rotator.py /usr/local/bin/grok2api-session-rotator
 RUN chmod 0755 /usr/local/bin/grok2api-session-rotator
 
 USER 1000:1000
-ENTRYPOINT ["/usr/local/bin/grok2api-session-rotator"]
+ENTRYPOINT ["/usr/local/bin/grok2api-require-arm64", "/usr/local/bin/grok2api-session-rotator"]

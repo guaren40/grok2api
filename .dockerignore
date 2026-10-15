@@ -28,6 +28,7 @@ backend/**/*_test.go
 
 !docker/
 !docker/entrypoint.sh
+!docker/require-arm64.sh
 
 !tools/
 !tools/egress-quality-guard/

@@ -4,15 +4,10 @@ ARG ALPINE_VERSION=3.23
 
 FROM --platform=linux/arm64 node:${NODE_VERSION}-alpine AS frontend-builder
 
-ARG TARGETOS
-ARG TARGETARCH
-# The build target controls the output image's platform metadata. An ARM64
-# FROM does not make an x86-targeted image safe to deploy on an ARM64 host.
-RUN if [ "${TARGETOS}/${TARGETARCH}" != "linux/arm64" ]; then \
-      printf '%s\n' "ARM64-only image: builder target is ${TARGETOS}/${TARGETARCH}." \
-        'Zeabur Git source builds must target linux/arm64; if its builder targets amd64, deploy ghcr.io/guaren40/grok2api:latest-arm64 as a Docker Image service instead.' >&2; \
-      exit 1; \
-    fi
+# TARGETARCH may describe the builder's implicit default even when FROM pins
+# this stage to ARM64. Validate the actual stage instead, including under QEMU.
+COPY --chmod=0755 docker/require-arm64.sh /usr/local/bin/grok2api-require-arm64
+RUN grok2api-require-arm64
 
 WORKDIR /src/frontend
 RUN corepack enable
@@ -35,6 +30,9 @@ RUN --mount=type=cache,id=grok2api-tsc,target=/src/frontend/.cache,sharing=locke
 
 FROM --platform=linux/arm64 golang:${GO_VERSION}-alpine AS backend-builder
 
+COPY --chmod=0755 docker/require-arm64.sh /usr/local/bin/grok2api-require-arm64
+RUN grok2api-require-arm64
+
 WORKDIR /src/backend
 RUN apk add --no-cache ca-certificates git
 
@@ -52,6 +50,9 @@ RUN --mount=type=cache,id=grok2api-go-mod,target=/go/pkg/mod,sharing=locked \
 
 
 FROM --platform=linux/arm64 alpine:${ALPINE_VERSION}
+
+COPY --chmod=0755 docker/require-arm64.sh /usr/local/bin/grok2api-require-arm64
+RUN grok2api-require-arm64
 
 ENV TZ=Asia/Shanghai \
     GROK2API_CONFIG_SOURCE=/run/grok2api/config.yaml
@@ -78,5 +79,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD wget -qO- http://127.0.0.1:8000/healthz >/dev/null || exit 1
 
-ENTRYPOINT ["/usr/local/bin/grok2api-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/grok2api-require-arm64", "/usr/local/bin/grok2api-entrypoint"]
 CMD ["/app/grok2api", "--config", "/app/config.yaml", "--listen", "0.0.0.0:8000"]

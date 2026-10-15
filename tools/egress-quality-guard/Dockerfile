@@ -1,8 +1,7 @@
 FROM --platform=linux/arm64 python:3.12-alpine
 
-ARG TARGETOS
-ARG TARGETARCH
-RUN test "${TARGETOS}/${TARGETARCH}" = "linux/arm64"
+COPY --chmod=0755 docker/require-arm64.sh /usr/local/bin/grok2api-require-arm64
+RUN grok2api-require-arm64
 
 RUN addgroup -S -g 10001 quality-guard && \
     adduser -S -D -H -u 10001 -G quality-guard quality-guard && \
@@ -15,4 +14,4 @@ RUN chmod 0755 /usr/local/bin/grok2api-egress-quality-guard
 
 USER quality-guard
 VOLUME ["/var/lib/grok2api-quality-guard"]
-ENTRYPOINT ["/usr/local/bin/grok2api-egress-quality-guard"]
+ENTRYPOINT ["/usr/local/bin/grok2api-require-arm64", "/usr/local/bin/grok2api-egress-quality-guard"]
