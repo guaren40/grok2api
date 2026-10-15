@@ -88,18 +88,30 @@ func TestGenerateWSImageReacquiresAfterChallengeHandshake(t *testing.T) {
 			return
 		}
 		defer connection.Close()
+		var message map[string]any
 		for range 2 {
-			var message map[string]any
 			if err := connection.ReadJSON(&message); err != nil {
 				t.Errorf("read Imagine request: %v", err)
 				return
 			}
 		}
+		item, _ := message["item"].(map[string]any)
+		content, _ := item["content"].([]any)
+		if len(content) != 1 {
+			t.Errorf("missing Imagine request content: %#v", message)
+			return
+		}
+		text, _ := content[0].(map[string]any)
+		requestID, _ := text["requestId"].(string)
+		if requestID == "" {
+			t.Errorf("missing Imagine request ID: %#v", message)
+			return
+		}
 		_ = connection.WriteJSON(map[string]any{
-			"type": "image", "id": "image-1", "blob": "aW1hZ2U=", "percentage_complete": 100, "grid_index": 0,
+			"type": "image", "requestId": requestID, "id": "image-1", "blob": "aW1hZ2U=", "percentage_complete": 100, "grid_index": 0,
 		})
 		_ = connection.WriteJSON(map[string]any{
-			"type": "json", "id": "image-1", "current_status": "completed", "moderated": false, "order": 0,
+			"type": "json", "requestId": requestID, "id": "image-1", "current_status": "completed", "moderated": false, "order": 0,
 		})
 	}))
 	defer server.Close()
