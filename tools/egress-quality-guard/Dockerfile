@@ -1,4 +1,8 @@
-FROM python:3.12-alpine
+FROM --platform=linux/arm64 python:3.12-alpine
+
+ARG TARGETOS
+ARG TARGETARCH
+RUN test "${TARGETOS}/${TARGETARCH}" = "linux/arm64"
 
 RUN addgroup -S -g 10001 quality-guard && \
     adduser -S -D -H -u 10001 -G quality-guard quality-guard && \

@@ -13,7 +13,7 @@
 <p align="center">
   <a href="./backend/go.mod"><img alt="Go" src="https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white" /></a>
   <a href="./frontend/package.json"><img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111827" /></a>
-  <a href="https://github.com/chenyme/grok2api/pkgs/container/grok2api"><img alt="Docker" src="https://img.shields.io/badge/Docker-amd64%20%7C%20arm64-2496ED?logo=docker&logoColor=white" /></a>
+  <a href="https://github.com/guaren40/grok2api/pkgs/container/grok2api"><img alt="Docker" src="https://img.shields.io/badge/Docker-arm64-2496ED?logo=docker&logoColor=white" /></a>
 </p>
 
 <p align="center">
@@ -158,10 +158,10 @@ flowchart LR
 
 ## 快速部署
 
-官方镜像支持 `linux/amd64` 和 `linux/arm64`。
+本仓库的 Docker 构建和 Compose 部署仅支持 `linux/arm64`。在 ARM64 VPS 上使用以下命令：
 
 ```bash
-git clone https://github.com/chenyme/grok2api.git
+git clone https://github.com/guaren40/grok2api.git
 cd grok2api
 cp config.example.yaml config.yaml
 ```
@@ -186,8 +186,7 @@ bootstrapAdmin:
 启动服务：
 
 ```bash
-docker compose pull
-docker compose up -d
+docker compose up -d --build
 docker compose logs -f grok2api
 ```
 

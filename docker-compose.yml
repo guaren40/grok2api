@@ -3,7 +3,14 @@ name: grok2api
 services:
   grok2api:
     container_name: grok2api
-    image: "${GROK2API_IMAGE:-ghcr.io/chenyme/grok2api:latest}"
+    image: grok2api:arm64
+    platform: linux/arm64
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/arm64
     ports:
       - "${GROK2API_PORT:-8000}:8000"
     environment:
@@ -28,6 +35,7 @@ services:
   # warp:
   #   container_name: warp
   #   image: caomingjun/warp:latest
+  #   platform: linux/arm64
   #   profiles: ["warp"]
   #   restart: unless-stopped
   #   ports:
@@ -45,6 +53,7 @@ services:
   # flaresolverr:
   #   container_name: flaresolverr
   #   image: ghcr.io/flaresolverr/flaresolverr:latest
+  #   platform: linux/arm64
   #   profiles: ["flaresolverr"]
   #   environment:
   #     TZ: Asia/Shanghai
@@ -59,9 +68,12 @@ services:
   egress-quality-guard:
     container_name: grok2api-egress-quality-guard
     profiles: ["quality-guard"]
+    platform: linux/arm64
     build:
       context: .
       dockerfile: tools/egress-quality-guard/Dockerfile
+      platforms:
+        - linux/arm64
     environment:
       # Default matches the Compose service name. Override for host networking
       # or a renamed grok2api service, e.g. http://127.0.0.1:8000

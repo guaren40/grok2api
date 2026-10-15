@@ -2,7 +2,11 @@ ARG NODE_VERSION=22
 ARG GO_VERSION=1.26
 ARG ALPINE_VERSION=3.23
 
-FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS frontend-builder
+FROM --platform=linux/arm64 node:${NODE_VERSION}-alpine AS frontend-builder
+
+ARG TARGETOS
+ARG TARGETARCH
+RUN test "${TARGETOS}/${TARGETARCH}" = "linux/arm64"
 
 WORKDIR /src/frontend
 RUN corepack enable
@@ -23,10 +27,7 @@ RUN --mount=type=cache,id=grok2api-tsc,target=/src/frontend/.cache,sharing=locke
     pnpm build
 
 
-FROM --platform=$BUILDPLATFORM golang:${GO_VERSION}-alpine AS backend-builder
-
-ARG TARGETOS
-ARG TARGETARCH
+FROM --platform=linux/arm64 golang:${GO_VERSION}-alpine AS backend-builder
 
 WORKDIR /src/backend
 RUN apk add --no-cache ca-certificates git
@@ -40,11 +41,11 @@ COPY backend/internal ./internal
 COPY backend/docs/docs.go ./docs/docs.go
 RUN --mount=type=cache,id=grok2api-go-mod,target=/go/pkg/mod,sharing=locked \
     --mount=type=cache,id=grok2api-go-build,target=/root/.cache/go-build,sharing=locked \
-    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
     go build -buildvcs=false -trimpath -ldflags="-s -w" -o /out/grok2api ./cmd/grok2api
 
 
-FROM alpine:${ALPINE_VERSION}
+FROM --platform=linux/arm64 alpine:${ALPINE_VERSION}
 
 ENV TZ=Asia/Shanghai \
     GROK2API_CONFIG_SOURCE=/run/grok2api/config.yaml
