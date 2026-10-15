@@ -6,7 +6,13 @@ FROM --platform=linux/arm64 node:${NODE_VERSION}-alpine AS frontend-builder
 
 ARG TARGETOS
 ARG TARGETARCH
-RUN test "${TARGETOS}/${TARGETARCH}" = "linux/arm64"
+# The build target controls the output image's platform metadata. An ARM64
+# FROM does not make an x86-targeted image safe to deploy on an ARM64 host.
+RUN if [ "${TARGETOS}/${TARGETARCH}" != "linux/arm64" ]; then \
+      printf '%s\n' "ARM64-only image: builder target is ${TARGETOS}/${TARGETARCH}." \
+        'Zeabur Git source builds must target linux/arm64; if its builder targets amd64, deploy ghcr.io/guaren40/grok2api:latest-arm64 as a Docker Image service instead.' >&2; \
+      exit 1; \
+    fi
 
 WORKDIR /src/frontend
 RUN corepack enable

@@ -204,6 +204,12 @@ docker compose logs -f grok2api
 
 Open `http://127.0.0.1:8000`. The image already includes the frontend; SQLite data and local media are stored in the Compose volume.
 
+### Zeabur on an ARM64 VPS
+
+Zeabur builds GitHub source on a separate build worker. An ARM64 runtime server does not automatically make the build target `linux/arm64`. If the build log says `builder target is linux/amd64`, that source build cannot produce the required ARM64 image; the Dockerfile stops rather than emitting an image with mismatched platform metadata.
+
+In Zeabur, choose **Add Service → Docker Image**, enter `ghcr.io/guaren40/grok2api:latest-arm64`, and select your ARM64 runtime server. Mount the existing configuration file at `/run/grok2api/config.yaml`, mount persistent storage at `/app/data`, and configure HTTP port `8000`. If the image pull is denied, grant read access in the GitHub container package settings or configure registry credentials in Zeabur. Zeabur GitHub source builds do not read this repository's `docker-compose.yml`.
+
 ### Run from source
 
 ```bash

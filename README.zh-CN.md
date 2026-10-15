@@ -192,6 +192,12 @@ docker compose logs -f grok2api
 
 访问 `http://127.0.0.1:8000`。镜像已包含前端，SQLite 数据库与本地媒体保存在 Compose 数据卷中。
 
+### Zeabur 的 ARM64 VPS
+
+Zeabur 的 GitHub 源码构建在独立的构建机上进行，不会因为运行服务器是 ARM64 就自动以 `linux/arm64` 为构建目标。如果构建日志出现 `builder target is linux/amd64`，该次源码构建无法产出符合要求的 ARM64 镜像；Dockerfile 会主动停止构建，避免生成架构标记错误的镜像。
+
+在 Zeabur 使用 **Add Service → Docker Image**，镜像填写 `ghcr.io/guaren40/grok2api:latest-arm64`，运行目标选择你的 ARM64 服务器。将现有配置文件挂载到 `/run/grok2api/config.yaml`，将数据卷挂载到 `/app/data`，并配置 HTTP 端口 `8000`。如拉取镜像遇到权限错误，需在 GitHub 的容器包设置中开放读取权限，或在 Zeabur 配置镜像仓库凭证。Zeabur 的 GitHub 源码构建不会读取本仓库的 `docker-compose.yml`。
+
 ### 源码运行
 
 ```bash
